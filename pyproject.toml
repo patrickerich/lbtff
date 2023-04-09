@@ -1,6 +1,32 @@
+# [build-system]
+# requires = ["setuptools>=61.0"]
+# build-backend = "setuptools.build_meta"
 [build-system]
-build-backend = "setuptools.build_meta"
-requires = ["setuptools", "wheel"]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "lbtff"
+# dynamic = ["version"]
+version = "0.0.1"
+authors = [
+    {name = "Patrick Erich", email = "git@patrickerich.email"},
+]
+description = "Line based text file filter"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    'Programming Language :: Python :: 3',
+    'License :: OSI Approved :: MIT License',
+    'Operating System :: OS Independent',
+    'Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)',
+    "Topic :: Utilities",
+]
+
+license = {file = "LICENSE"}
 
 [project.scripts]
-hello-world = "lbtff:hello_world"
+lbtff = "lbtff.cli:main"
+
+[project.urls]
+Home = "https://github.com/patrickerich/lbtff"

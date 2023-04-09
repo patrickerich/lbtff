@@ -1,15 +1,16 @@
 from setuptools import setup
 from setuptools import find_packages
 from os import path
-import lbtff
 
 
 def read_file(fname):
     with open(path.join(path.dirname(__file__), fname), encoding="utf8") as f:
         return f.read()
 
+
 # Read the __version__ variable
 exec(read_file(path.join("lbtff", "_version.py")))
+
 
 setup(
     name='lbtff',
@@ -23,13 +24,18 @@ setup(
     author_email='git@patrickerich.email',
     packages=find_packages(),
     python_requires='>=3.6',
-    # install_requires=[],
-    # entry_points={},
+    entry_points={
+        'console_scripts': [
+            'lbtff = lbtff.cli:main',
+        ]
+    },
     platforms='any',
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
+        'Operating System :: OS Independent',
         'Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)',
+        'Topic :: Utilities',
     ],
     zip_safe=False
 )
