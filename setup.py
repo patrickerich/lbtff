@@ -9,7 +9,8 @@ def read_file(fname):
 
 
 # Read the __version__ variable
-exec(read_file(path.join("lbtff", "_version.py")))
+# exec(read_file(path.join("lbtff", "_version.py")))
+from lbtff import __version__
 
 
 setup(
