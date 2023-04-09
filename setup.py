@@ -1,6 +1,7 @@
 from setuptools import setup
 from setuptools import find_packages
 from os import path
+from lbtff import __version__
 
 
 def read_file(fname):
@@ -10,7 +11,6 @@ def read_file(fname):
 
 # Read the __version__ variable
 # exec(read_file(path.join("lbtff", "_version.py")))
-from lbtff import __version__
 
 
 setup(
@@ -35,7 +35,8 @@ setup(
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
-        'Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)',
+        'Topic :: Scientific/Engineering :: '
+        'Electronic Design Automation (EDA)',
         'Topic :: Utilities',
     ],
     zip_safe=False

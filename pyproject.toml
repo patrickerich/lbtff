@@ -2,24 +2,16 @@
 build-backend = "flit_core.buildapi"
 requires = ["flit_core >=3.2,<4"]
 
-# [build-system]
-# requires = ["setuptools>=61.0"]
-# build-backend = "setuptools.build_meta"
-
-# [build-system]
-# requires = ["hatchling"]
-# build-backend = "hatchling.build"
-
 [project]
 name = "lbtff"
 dynamic = ["version"]
-# version = "0.0.1"
 authors = [
     {name = "Patrick Erich", email = "git@patrickerich.email"},
 ]
 description = "Line based text file filter"
 readme = "README.md"
-requires-python = ">=3.7"
+license = {file = "LICENSE"}
+requires-python = ">=3.6"
 classifiers = [
     'Programming Language :: Python :: 3',
     'License :: OSI Approved :: MIT License',
@@ -27,8 +19,23 @@ classifiers = [
     'Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)',
     "Topic :: Utilities",
 ]
+# dependencies = [
+#   "python-dateutil",
+#   "ruamel.yaml",
+#   "tomli >= 1.1.0 ; python_version < '3.11'",
+#   "tomli-w",
+# ]
 
-license = {file = "LICENSE"}
+# [project.optional-dependencies]
+# dev = [
+#   "bumpversion",
+#   "coverage",
+#   "flake8",
+#   "flake8-docstrings",
+#   "flit",
+#   "pyfakefs",
+#   "pytest",
+# ]
 
 [project.scripts]
 lbtff = "lbtff.cli:main"
@@ -36,7 +43,22 @@ lbtff = "lbtff.cli:main"
 [project.urls]
 Home = "https://github.com/patrickerich/lbtff"
 
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "if 0:",
+  "if __name__ == .__main__.:",
+]
+fail_under = 100
+
+[tool.coverage.run]
+branch = true
+source = ["lbtff"]
+
+[tool.flit.sdist]
+exclude = ["docs"]
+
 [tool.lbtff.vars]
 package_name = "lbtff"
-version_cmd = "lbtff lbtffversion"
+version_cmd = "lbtff --version"
 version_index = 1

@@ -1,11 +1,12 @@
 """cli entry point lbtff.
 Parse command line arguments in, invoke lbtff.
 """
-import argparse
-# import signal
+
+import os
 import sys
-# import textwrap
-# import traceback
+import re
+import argparse
+import textwrap
 import lbtff.version
 
 
@@ -15,43 +16,56 @@ def main(args=None):
     becomes sys.exit(main()).
     The __main__ entry point similarly wraps sys.exit().
     """
-    if args is None:
-        args = sys.argv[1:]
 
+    # Get the cli arguments
+    if args is None:
+        args = ['--help', ]
+        if len(sys.argv) > 1:
+            args = sys.argv[1:]
+
+    # Parse the cli arguments
     parsed_args = get_args(args)
 
-    # try:
-    #     config.init()
-    #     pypyr.log.logger.set_root_logger(log_level=parsed_args.log_level,
-    #                                      log_path=parsed_args.log_path)
+    # Verify source file
+    if not os.path.isfile(parsed_args.fileIn):
+        print(f'error: {parsed_args.fileIn} does not exist')
+        sys.exit(1)
 
-    #     pypyr.pipelinerunner.run(
-    #         pipeline_name=parsed_args.pipeline_name,
-    #         args_in=parsed_args.context_args,
-    #         parse_args=True,
-    #         groups=parsed_args.groups,
-    #         success_group=parsed_args.success_group,
-    #         failure_group=parsed_args.failure_group,
-    #         py_dir=parsed_args.py_dir)
+    # Verify destination file
+    if os.path.isfile(parsed_args.fileOut):
+        print(f'{parsed_args.fileOut} exists. Override (y/n)?:', end=' ')
+        reply = input().strip().lower()
+        if reply[0] != 'y':
+            sys.exit(1)
 
-    # except KeyboardInterrupt:
-    #     # Shell standard is 128 + signum = 130 (SIGINT = 2)
-    #     sys.stdout.write("\n")
-    #     return 128 + signal.SIGINT
-    # except Exception as e:
-    #     # stderr and exit code 255
-    #     sys.stderr.write("\n")
-    #     sys.stderr.write(f"\033[91m{type(e).__name__}: {str(e)}\033[0;0m")
-    #     sys.stderr.write("\n")
-    #     # at this point, you're guaranteed to have args and thus log_level
-    #     if parsed_args.log_level:
-    #         if parsed_args.log_level < 10:
-    #             # traceback prints to stderr by default
-    #             traceback.print_exc()
+    # Compile any regular expressions
+    re_includes = None
+    re_excludes = None  
+    if parsed_args.inc:
+        re_includes = [re.compile(str(regex)) for regex in parsed_args.inc]
+    if parsed_args.exc:
+        re_excludes = [re.compile(str(regex)) for regex in parsed_args.exc]
 
-    #     return 255
-
-# region cli args
+    # Process the input file and write the output file
+    with (
+        open(parsed_args.fileIn,  'r') as fpIn,
+        open(parsed_args.fileOut, 'w') as fpOut
+    ):
+        for line in fpIn:
+            line = line.rstrip()
+            include = True
+            exclude = False
+            if re_includes:
+                include = False
+                for regex in re_includes:
+                    if regex.search(line):
+                        include = True
+            if re_excludes:
+                for regex in re_excludes:
+                    if regex.search(line):
+                        exclude = True
+            if include and not exclude:
+                fpOut.write(f"{line}\n")
 
 
 def get_args(args):
@@ -66,73 +80,46 @@ def get_parser():
         description='Line based text file filter',
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    # parser.add_argument('pipeline_name',
-    #                     help=wrap('Name of pipeline to run. Don`t add the '
-    #                               '.yaml at the end.'))
-    # parser.add_argument(dest='context_args',
-    #                     nargs='*',
-    #                     default=None,
-    #                     help=wrap('Initialize context with this. Parsed by '
-    #                               'the pipeline\'s context_parser function.\n'
-    #                               'Separate multiple args with spaces.'))
-    # parser.add_argument('--groups', dest='groups',
-    #                     nargs='*',
-    #                     default=None,
-    #                     help=wrap(
-    #                         'Step-Groups to run. defaults to "steps".\n'
-    #                         'You probably want to order --groups AFTER the '
-    #                         'pipeline name and context positional args. e.g\n'
-    #                         'pypyr pipename context --groups group1 group2\n'
-    #                         'If you prefer putting them before, use a -- to '
-    #                         'separate groups from the pipeline name, e.g\n'
-    #                         'pypyr --groups group1 group2 -- pipename context')
-    #                     )
-    # parser.add_argument('--success', dest='success_group', default=None,
-    #                     help=wrap(
-    #                         'Step-Group to run on successful completion of '
-    #                         'pipeline.\n'
-    #                         'Defaults to "on_success"'))
-    # parser.add_argument('--failure', dest='failure_group', default=None,
-    #                     help=wrap(
-    #                         'Step-Group to run on error completion of '
-    #                         'pipeline.\n'
-    #                         'Defaults to "on_failure"'))
-    # parser.add_argument('--dir', dest='py_dir',
-    #                     default=config.cwd,
-    #                     help=wrap('Load custom python modules from this '
-    #                               'directory.\n'
-    #                               'Defaults to cwd (the current dir).'))
-    # parser.add_argument('--log', '--loglevel', dest='log_level', type=int,
-    #                     default=None,
-    #                     help=wrap(
-    #                         'Integer log level. Defaults to 25 (NOTIFY).\n'
-    #                         '10=DEBUG \n'
-    #                         '20=INFO\n'
-    #                         '25=NOTIFY\n'
-    #                         '30=WARNING\n'
-    #                         '40=ERROR\n'
-    #                         '50=CRITICAL\n'
-    #                         'Log Level < 10 gives full traceback on errors.'))
-    # parser.add_argument('--logpath', dest='log_path',
-    #                     help=wrap(
-    #                         'Log-file path. Append log output to this path.'))
+    parser.add_argument(
+        'fileIn',
+        help=wrap('input file name')
+    )
+    parser.add_argument(
+        'fileOut',
+        help=wrap('output file name')
+    )
+    parser.add_argument(
+        '--inc',
+        nargs='*',
+        action='extend',
+        help=wrap(
+            'regular expression(s) determining INclusion of a line '
+            'of the input file in the output file (non-dominant)\n'
+            'multiple instances allowed'
+        )
+    )
+    parser.add_argument(
+        '--exc',
+        action='extend',
+        nargs='*',
+        help=wrap(
+            'regular expression(s) determining EXclusion of a line '
+            'of the input file in the output file (dominant)\n'
+            'multiple instances allowed'
+        )
+    )
     parser.add_argument('--version', action='version',
-                        help='Echo version number.',
+                        help='echo version number.',
                         version=f'{lbtff.version.get_version()}')
     return parser
 
 
-# def wrap(text, **kwargs):
-#     """Wrap lines in argparse so they align nicely in 2 columns.
-#     Default width is 70.
-#     With gratitude to paul.j3 https://bugs.python.org/issue12806
-#     """
-#     # apply textwrap to each line individually
-#     text = text.splitlines()
-#     text = [textwrap.fill(line, **kwargs) for line in text]
-#     return '\n'.join(text)
-
-# endregion cli args
-
-# def main():
-#     print("Hello world")
+def wrap(text, **kwargs):
+    """Wrap lines in argparse so they align nicely in 2 columns.
+    Default width is 70.
+    With gratitude to paul.j3 https://bugs.python.org/issue12806
+    """
+    # apply textwrap to each line individually
+    text = text.splitlines()
+    text = [textwrap.fill(line, **kwargs) for line in text]
+    return '\n'.join(text)
