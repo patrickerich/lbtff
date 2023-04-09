@@ -40,17 +40,14 @@ def main(args=None):
 
     # Compile any regular expressions
     re_includes = None
-    re_excludes = None  
+    re_excludes = None
     if parsed_args.inc:
         re_includes = [re.compile(str(regex)) for regex in parsed_args.inc]
     if parsed_args.exc:
         re_excludes = [re.compile(str(regex)) for regex in parsed_args.exc]
 
     # Process the input file and write the output file
-    with (
-        open(parsed_args.fileIn,  'r') as fpIn,
-        open(parsed_args.fileOut, 'w') as fpOut
-    ):
+    with open(parsed_args.fileIn,  'r') as fpIn, open(parsed_args.fileOut, 'w') as fpOut:
         for line in fpIn:
             line = line.rstrip()
             include = True

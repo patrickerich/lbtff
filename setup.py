@@ -9,10 +9,6 @@ def read_file(fname):
         return f.read()
 
 
-# Read the __version__ variable
-# exec(read_file(path.join("lbtff", "_version.py")))
-
-
 setup(
     name='lbtff',
     version=__version__,  # noqa: F821
