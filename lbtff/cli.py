@@ -6,6 +6,7 @@ import os
 import sys
 import re
 import argparse
+import textwrap
 import lbtff.version
 
 
@@ -38,6 +39,7 @@ def main(args=None):
             sys.exit(1)
 
     # Compile any regular expressions
+    # TBD: Elegant solution for in-string quotes
     re_includes = None
     re_excludes = None
     if parsed_args.inc_re:
@@ -74,14 +76,31 @@ def get_parser():
     parser = argparse.ArgumentParser(
         allow_abbrev=True,
         description=(
-            'Line based text file filter.\n'
-            'Utilizes Python\'s regular expression module (re).'
+            textwrap.fill(
+                'Line based text file filter that utilizes '
+                'Python\'s regular expression module (re).',
+                width=70,
+            )
+        ),
+        epilog=(
+            textwrap.fill(
+                'IMPORTANT NOTE: '
+                'The regular expressions should be in quotes '
+                '(preceded and followed by quotation marks). '
+                'Both "RE" and \'RE\' are allowed. '
+                'Should the regular expression itself contain similar '
+                'quotation marks (as those used to surround it), then '
+                'they need to be escaped by preceding them with a '
+                'backslash (\\).',
+                width=70,
+                replace_whitespace=False
+            )
         ),
         formatter_class=(
             lambda prog: argparse.RawDescriptionHelpFormatter(
                 prog,
                 max_help_position=40,
-                width=80,
+                width=70,
             )
         ),
     )
@@ -104,6 +123,7 @@ def get_parser():
     parser.add_argument(
         '-i', '--inc-re',
         type=str,
+        nargs=1,
         action='extend',
         help=(
             'Regular expression determining INclusion of a line '
@@ -114,6 +134,7 @@ def get_parser():
     parser.add_argument(
         '-e', '--exc-re',
         type=str,
+        nargs=1,
         action='extend',
         help=(
             'Regular expression determining EXclusion of a line '
