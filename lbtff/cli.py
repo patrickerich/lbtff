@@ -6,7 +6,6 @@ import os
 import sys
 import re
 import argparse
-import textwrap
 import lbtff.version
 
 
@@ -41,10 +40,10 @@ def main(args=None):
     # Compile any regular expressions
     re_includes = None
     re_excludes = None
-    if parsed_args.inc:
-        re_includes = [re.compile(str(regex)) for regex in parsed_args.inc]
-    if parsed_args.exc:
-        re_excludes = [re.compile(str(regex)) for regex in parsed_args.exc]
+    if parsed_args.inc_re:
+        re_includes = [re.compile(str(regex)) for regex in parsed_args.inc_re]
+    if parsed_args.exc_re:
+        re_excludes = [re.compile(str(regex)) for regex in parsed_args.exc_re]
 
     # Process the input file and write the output file
     with open(parsed_args.fileIn,  'r') as fpIn, open(parsed_args.fileOut, 'w') as fpOut:
@@ -74,49 +73,52 @@ def get_parser():
     """Return ArgumentParser for lbtff cli"""
     parser = argparse.ArgumentParser(
         allow_abbrev=True,
-        description='Line based text file filter',
-        formatter_class=argparse.RawTextHelpFormatter,
+        description=(
+            'Line based text file filter.'
+            'Utilizes Python\'s regular expression module'
+        ),
+        formatter_class=(
+            lambda prog: argparse.HelpFormatter(
+                prog,
+                max_help_position=80,
+                width=100,
+            )
+        ),
+    )
+    parser.add_argument(
+        '-v', '--version',
+        action='version',
+        help='Echo version number.',
+        version=f'{lbtff.version.get_version()}',
     )
     parser.add_argument(
         'fileIn',
-        help=wrap('input file name')
+        type=str,
+        help=('Input file'),
     )
     parser.add_argument(
         'fileOut',
-        help=wrap('output file name')
+        type=str,
+        help=('Output file'),
     )
     parser.add_argument(
-        '--inc',
-        nargs='*',
+        '-i', '--inc-re',
+        type=str,
         action='extend',
-        help=wrap(
-            'regular expression(s) determining INclusion of a line '
-            'of the input file in the output file (non-dominant)\n'
-            'multiple instances allowed'
-        )
+        help=(
+            'Regular expression determining INclusion of a line '
+            'of the input file in the output file (non-dominant). '
+            'Multiple instances of this argument are effectively OR-ed.'
+        ),
     )
     parser.add_argument(
-        '--exc',
+        '-e', '--exc-re',
+        type=str,
         action='extend',
-        nargs='*',
-        help=wrap(
-            'regular expression(s) determining EXclusion of a line '
-            'of the input file in the output file (dominant)\n'
-            'multiple instances allowed'
-        )
+        help=(
+            'Regular expression determining EXclusion of a line '
+            'of the input file in the output file (dominant). '
+            'Multiple instances of this argument are effectively OR-ed.'
+        ),
     )
-    parser.add_argument('--version', action='version',
-                        help='echo version number.',
-                        version=f'{lbtff.version.get_version()}')
     return parser
-
-
-def wrap(text, **kwargs):
-    """Wrap lines in argparse so they align nicely in 2 columns.
-    Default width is 70.
-    With gratitude to paul.j3 https://bugs.python.org/issue12806
-    """
-    # apply textwrap to each line individually
-    text = text.splitlines()
-    text = [textwrap.fill(line, **kwargs) for line in text]
-    return '\n'.join(text)
