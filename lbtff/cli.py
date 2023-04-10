@@ -74,14 +74,14 @@ def get_parser():
     parser = argparse.ArgumentParser(
         allow_abbrev=True,
         description=(
-            'Line based text file filter.'
-            'Utilizes Python\'s regular expression module'
+            'Line based text file filter.\n'
+            'Utilizes Python\'s regular expression module (re).'
         ),
         formatter_class=(
-            lambda prog: argparse.HelpFormatter(
+            lambda prog: argparse.RawDescriptionHelpFormatter(
                 prog,
-                max_help_position=80,
-                width=100,
+                max_help_position=40,
+                width=80,
             )
         ),
     )
