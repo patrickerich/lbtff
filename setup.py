@@ -20,7 +20,7 @@ setup(
     author='Patrick Erich',
     author_email='git@patrickerich.email',
     packages=find_packages(),
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     entry_points={
         'console_scripts': [
             'lbtff = lbtff.cli:main',
