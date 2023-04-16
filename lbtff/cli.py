@@ -5,6 +5,7 @@ Parse command line arguments in, invoke lbtff.
 import os
 import sys
 import re
+import math
 import argparse
 import textwrap
 import lbtff.version
@@ -47,9 +48,15 @@ def main(args=None):
     if parsed_args.exc_re:
         re_excludes = [re.compile(str(regex)) for regex in parsed_args.exc_re]
 
+    # Determine total number of lines in input file
+    num_lines = sum(1 for _ in open(parsed_args.fileIn))
+    linenr_width = math.ceil(math.log10(num_lines))
+    linenr = 0
+
     # Process the input file and write the output file
     with open(parsed_args.fileIn,  'r') as fpIn, open(parsed_args.fileOut, 'w') as fpOut:
         for line in fpIn:
+            linenr += 1
             line = line.rstrip()
             include = True
             exclude = False
@@ -63,7 +70,9 @@ def main(args=None):
                     if regex.search(line):
                         exclude = True
             if include and not exclude:
-                fpOut.write(f"{line}\n")
+                if parsed_args.print_linenr:
+                    fpOut.write(f'{linenr:{linenr_width}} :  ')
+                fpOut.write(f'{line}\n')
 
 
 def get_args(args):
@@ -140,6 +149,14 @@ def get_parser():
             'Regular expression determining EXclusion of a line '
             'of the input file in the output file (dominant). '
             'Multiple instances of this argument are effectively OR-ed.'
+        ),
+    )
+    parser.add_argument(
+        '-pl', '--print-linenr',
+        action='store_true',
+        help=(
+            'Precede every matched line with the line number of the '
+            'match in the original file.'
         ),
     )
     return parser
